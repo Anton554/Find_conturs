@@ -66,8 +66,9 @@ def conv_img(img):
 def pars_img(class_num: str, img_name: str):
     np_arr = cv.imread(img_name)
     img_gray, img = conv_img(np_arr)
-    save_file(class_num, img, sub='fin')
     save_file(class_num, img_gray, sub='raw')
+    ph = save_file(class_num, img, sub='fin')
+    return ph
 
 
 def save_file(cl, img, sub='raw'):
@@ -85,6 +86,7 @@ def save_file(cl, img, sub='raw'):
     else:
         max_sufix = max([int(s.split('.')[0].split('_')[1]) for s in ls_file]) + 1
     cv.imwrite(f'./img/{sub}/{cl}-img_{max_sufix}.png', img)
+    return f'C:/Projects/IT/Python/Find_conturs/img/{sub}/{cl}-img_{max_sufix}.png'
 
 
 if __name__ == '__main__':

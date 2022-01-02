@@ -9,14 +9,15 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.callback_data import CallbackData
 import main
+import torch
 import img_proces
+from predict_one import predict, print_proc
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
+
 class StatusAvto(StatesGroup):
     set_num = State()
-
-
 
 
 def register_handlers(dp: Dispatcher):
@@ -29,7 +30,6 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(download_photo, content_types=["photo"], state="*")
     dp.register_callback_query_handler(retry_ph, cb_avtobot.filter(step=["retry_ph"]), state="*")
     dp.register_callback_query_handler(select_num, cb_avtobot.filter(step=["select_num"]), state="*")
-
 
 
 def register_handlers_final(dp: Dispatcher):
@@ -49,13 +49,13 @@ async def start(message: types.Message, state: FSMContext):
 
 async def qw_num(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
-    ls_action = list(range(0,5))
+    ls_action = list(range(0, 5))
     ls_btn = []
     for action in ls_action:
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='select_num'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    ls_action = list(range(5,10))
+    ls_action = list(range(5, 10))
     ls_btn = []
     for action in ls_action:
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='select_num'))
@@ -68,13 +68,11 @@ async def qw_num(message: types.Message):
 # cb_avtobot.filter(step=["select_num"]), state="*"
 async def select_num(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.answer(f'Вы ввели : {callback_data["action"]} ')
-    if callback_data["action"] in ['0','1','2','3','4','5','6','7','8','9']:
+    if callback_data["action"] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
         await state.update_data(class_num=callback_data["action"])
         await call.message.answer('Теперь сфотографируйте эту цифру')
     else:
         await qw_num(call.message)
-
-
 
 
 # content_types=["photo"], state="*"
@@ -94,8 +92,14 @@ async def pars_num(message: types.Message, state: FSMContext):
     state_dc = await state.get_data()
     # Обрабатываем фото и сохраняем в папке ./img
     try:
-        img_proces.pars_img(class_num=state_dc['class_num'], img_name=state_dc['path_photo'])
-        await message.answer("Фото сохранено.")
+        ph = img_proces.pars_img(class_num=state_dc['class_num'], img_name=state_dc['path_photo'])
+        photo = open(ph, 'rb')
+        await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
+        net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net_3ch.pth')
+        pred, ver = predict(net, ph)
+        ver = print_proc(ver)
+        await message.answer(f'{ver}')
+        await message.answer(f'Ваше число - {pred}')
     except:
         await message.answer("Контур не найден.")
     finally:
@@ -107,7 +111,7 @@ async def pars_num(message: types.Message, state: FSMContext):
         await get_num(message)
 
 
-async def get_num(message: types.Message,):
+async def get_num(message: types.Message, ):
     keyboard = types.InlineKeyboardMarkup()
     ls_action = ['Да', 'Нет']
     ls_btn = []
@@ -130,7 +134,6 @@ async def retry_ph(call: types.CallbackQuery, callback_data: dict, state: FSMCon
         await call.message.answer('Приходите ещё :-)')
 
 
-
 async def delTemFile(fd, path):
     # закрываем дескриптор файла
     os.close(fd)
@@ -141,5 +144,3 @@ async def delTemFile(fd, path):
 # content_types=['text'], state="*"
 async def handler_txt(message: types.Message):
     await message.answer('Напишите /start')
-
-
