@@ -9,57 +9,48 @@ def img_show(win_name, img):
 
 
 def conv_img(img):
-    """
-
-    :param img: np_arr
-    :return:
-    """
-    # Изменение размер
+    # Обрезка до середины
     print(f'{img.shape=}')
     x0 = int(img.shape[1] / 3)
     y0 = int(img.shape[0] / 3)
     img = img[y0:y0 + y0, x0:x0 + x0, :]
-    resized = cv.resize(img, (224, 224), interpolation=cv.INTER_AREA)
-    # В серый
-    img_gray = cv.cvtColor(resized, cv.COLOR_BGR2GRAY)
-    # Открытие (Эрозия -> Расширение)
-    kernel = np.ones((5, 5), np.uint8)
-    logyEx = cv.morphologyEx(img_gray, cv.MORPH_OPEN, kernel)
-    # Глобальная пороговая обработка
-    ret, thresh = cv.threshold(logyEx, 150, 255, 0)
-    # Нахождение контуров (для заливки)
-    contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    # Заливка контуров
-    cv.drawContours(thresh, contours[1:], -1, (0, 255, 0), 3)
-    # Размытие Гауса
-    thresh = cv.GaussianBlur(thresh, (3, 3), 0)
-    # Нахождение контуров (для вырезания)
-    contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    # Нахождение максимального по площади контура
-    ls_cont = []
-    for cnt in contours[1:]:
-        x, y, w, h = cv.boundingRect(cnt)
-        z = (x + y) - (w + h)
-        ls_cont.append([z, (x, y, w, h)])
-    if len(ls_cont) == 0:
-        print('Контур объекта не найден.')
-        return None, None
-    print(ls_cont)
-    ls_cont = sorted(ls_cont)
-    x, y, w, h = ls_cont[0][1]
-    # x, y, w, h = x, y - 5, w + 10, h + 10
-    # Рисование контур
-    # cv.rectangle(thresh,(x,y),(x+w,y+h),(0,255,0),1)
-    # Утоншение
-    kernel = np.ones((3, 3), np.uint8)
-    thresh = cv.dilate(thresh, kernel, iterations=1)
-    # Вырезание по контуру
-    crop_img = thresh[y:y + h, x:x + w]
+    # Превращаем в черно-белое изображение
+    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+    # gaussian = cv.GaussianBlur(img_gray,(3,3),cv.BORDER_DEFAULT)
+    # Умное распознование
+    edges = cv.Canny(img_gray, 100, 200)
+
+    # Находим нужный контур
+    contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+    contour = max(contours, key=len)
+    # Координаты квадрата цифры
+    x, y, w, h = cv.boundingRect(contour)
+    # Обрезаем изображение
+    crop_img = img[y:y + h, x:x + w]
     # Инвертироваие цвета
     crop_img = 255 - crop_img
     crop_img = cv.resize(crop_img, (65, 65), interpolation=cv.INTER_AREA)
+    # Добавление рамки
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
+    # Убираем серый цвет
+    crop_img = cv.threshold(crop_img, 140, 255, cv.THRESH_BINARY)[1]
+    # Утолщение
+    kernel = np.ones((3, 3), np.uint8)
+    crop_img = cv.dilate(crop_img, kernel, iterations=1)
+    # Размытие по гаусу
+    crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
+    # Сжатие до 28, 28
     crop_img = cv.resize(crop_img, (28, 28))
+
+    # print(contour)
+
+    # contourImg = cv.drawContours(img, contour, -1, (0,255,0), 3)
+    # cv.imshow("Contours", crop_img)
+    # cv.imwrite('test.png', crop_img)
+
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
     return img_gray, crop_img
 
 
@@ -92,6 +83,6 @@ def save_file(cl, img, sub='raw'):
 if __name__ == '__main__':
     # save_file()
     # np_arr = cv.imread('./2.jpg')
-    np_arr = cv.imread('./img/raw/2-img_1.png')
-    img_gray, img = conv_img(np_arr)
-    img_show('im2', img)
+    # np_arr = cv.imread('./img/raw/6-2.jpg')
+    np_arr = cv.imread('./img/raw/6-img_127.png')
+    conv_img(np_arr)
