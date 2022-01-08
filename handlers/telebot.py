@@ -61,14 +61,17 @@ async def qw_num(message: types.Message):
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='select_num'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    question = 'Выберите цифру от 0 до 9'
-    await message.answer(text=question, reply_markup=keyboard)
+    # question = 'Выберите цифру от 0 до 9'
+    question = 'Сфотографируйте цифру 9'
+    # await message.answer(text=question, reply_markup=keyboard)
+    await message.answer(text=question)
 
 
 # cb_avtobot.filter(step=["select_num"]), state="*"
 async def select_num(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await call.message.answer(f'Вы ввели : {callback_data["action"]} ')
-    if callback_data["action"] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+    # await call.message.answer(f'Вы ввели : {callback_data["action"]} ')
+    if '9' in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+    # if callback_data["action"] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
         await state.update_data(class_num=callback_data["action"])
         await call.message.answer('Теперь сфотографируйте эту цифру')
     else:
@@ -92,7 +95,8 @@ async def pars_num(message: types.Message, state: FSMContext):
     state_dc = await state.get_data()
     # Обрабатываем фото и сохраняем в папке ./img
     try:
-        ph = img_proces.pars_img(class_num=state_dc['class_num'], img_name=state_dc['path_photo'])
+        ph = img_proces.pars_img('9', img_name=state_dc['path_photo'])
+        await state.update_data(pt_ph=ph)
         photo = open(ph, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
         net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net_3ch.pth')
@@ -106,7 +110,7 @@ async def pars_num(message: types.Message, state: FSMContext):
         # Удаление временного файла
         if state_dc.get('fd_photo', 0) > 0:
             await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
-        await state.finish()
+        # await state.finish()
         # 'Повторите?'
         await get_num(message)
 
@@ -119,20 +123,23 @@ async def get_num(message: types.Message, ):
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='retry_ph'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    question = 'Повторите?'
+    question = 'Сохранить?'
+    # question = 'Повторите?'
     await message.answer(text=question, reply_markup=keyboard)
 
 
 # cb_avtobot.filter(step=["retry_ph"]), state="*"
 async def retry_ph(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    state_dc = await state.get_data()
     # обработчик -- подтверждение ввода номера
     if callback_data["action"] == 'Да':
         await state.finish()
         await qw_num(call.message)
     else:
+        os.remove(state_dc['pt_ph'])
         await state.finish()
-        await call.message.answer('Приходите ещё :-)')
-
+        # await call.message.answer('Приходите ещё :-)')
+        await qw_num(call.message)
 
 async def delTemFile(fd, path):
     # закрываем дескриптор файла

@@ -16,11 +16,8 @@ def conv_img(img):
     img = img[y0:y0 + y0, x0:x0 + x0, :]
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-    # gaussian = cv.GaussianBlur(img_gray,(3,3),cv.BORDER_DEFAULT)
     # Умное распознование
     edges = cv.Canny(img_gray, 100, 200)
-
     # Находим нужный контур
     contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     contour = max(contours, key=len)
@@ -31,8 +28,9 @@ def conv_img(img):
     # Инвертироваие цвета
     crop_img = 255 - crop_img
     crop_img = cv.resize(crop_img, (65, 65), interpolation=cv.INTER_AREA)
-    # Добавление рамки
+    # Добавление отступов
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
+    crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
     # Убираем серый цвет
     crop_img = cv.threshold(crop_img, 140, 255, cv.THRESH_BINARY)[1]
     # Утолщение
@@ -42,15 +40,6 @@ def conv_img(img):
     crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
     # Сжатие до 28, 28
     crop_img = cv.resize(crop_img, (28, 28))
-
-    # print(contour)
-
-    # contourImg = cv.drawContours(img, contour, -1, (0,255,0), 3)
-    # cv.imshow("Contours", crop_img)
-    # cv.imwrite('test.png', crop_img)
-
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
     return img_gray, crop_img
 
 
@@ -84,5 +73,6 @@ if __name__ == '__main__':
     # save_file()
     # np_arr = cv.imread('./2.jpg')
     # np_arr = cv.imread('./img/raw/6-2.jpg')
-    np_arr = cv.imread('./img/raw/6-img_127.png')
+    np_arr = cv.imread('./img/raw/6-img_154.png')
     conv_img(np_arr)
+
