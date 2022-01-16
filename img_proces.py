@@ -10,10 +10,10 @@ def img_show(win_name, img):
 
 def conv_img(img):
     # Обрезка до середины
-    print(f'{img.shape=}')
-    x0 = int(img.shape[1] / 3)
-    y0 = int(img.shape[0] / 3)
-    img = img[y0:y0 + y0, x0:x0 + x0, :]
+    # print(f'{img.shape=}')
+    # x0 = int(img.shape[1] / 3)
+    # y0 = int(img.shape[0] / 3)
+    # img = img[y0:y0 + y0, x0:x0 + x0, :]
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Умное распознование
@@ -73,6 +73,7 @@ if __name__ == '__main__':
     # save_file()
     # np_arr = cv.imread('./2.jpg')
     # np_arr = cv.imread('./img/raw/6-2.jpg')
-    np_arr = cv.imread('./img/raw/6-img_154.png')
+    # np_arr = cv.imread('./img/raw/6-img_154.png')
+    np_arr = cv.imread('./imgRandomRotation330.png')
     conv_img(np_arr)
 
