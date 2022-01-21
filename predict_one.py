@@ -28,7 +28,7 @@ def predict(net, img_name: str):
 
 
 if __name__ == '__main__':
-    net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net_3ch.pth')
+    net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net.pth')
     pred, proc = predict(net, './img/fin/6-img_108.png')
     # pred, proc = predict(net, './img/predict/num-362.jpg')
     print(print_proc(proc))

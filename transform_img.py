@@ -97,8 +97,8 @@ def my_fn2(img, path):
     my_fn(img, -50, path)
 
 
-for el in range(3, 200):
+for el in range(3, 500):
     try:
-        my_fn2(f'./img/raw/6-img_{el}.png', '6')
+        my_fn2(f'./img/raw/7-img_{el}.png', '7')
     except:
         pass

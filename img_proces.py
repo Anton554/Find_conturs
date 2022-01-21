@@ -1,3 +1,7 @@
+"""
+Модуль для обработки изображения
+"""
+
 import numpy as np
 import cv2 as cv
 import os
@@ -9,11 +13,12 @@ def img_show(win_name, img):
 
 
 def conv_img(img):
+    h1, w1 = 0, 0
     # Обрезка до середины
-    # print(f'{img.shape=}')
-    # x0 = int(img.shape[1] / 3)
-    # y0 = int(img.shape[0] / 3)
-    # img = img[y0:y0 + y0, x0:x0 + x0, :]
+    print(f'{img.shape=}')
+    x0 = int(img.shape[1] / 3)
+    y0 = int(img.shape[0] / 3)
+    img = img[y0:y0 + y0, x0:x0 + x0, :]
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Умное распознование
@@ -23,11 +28,22 @@ def conv_img(img):
     contour = max(contours, key=len)
     # Координаты квадрата цифры
     x, y, w, h = cv.boundingRect(contour)
+    # Поправочный коофицент для отцентровки изображения
+    if h > w:
+        h1 = int((h-w)/2)
+    else:
+        w1 = int((w-h)/2)
+    print(x, y, w, h, h1)
     # Обрезаем изображение
-    crop_img = img[y:y + h, x:x + w]
+    crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
+    # print(f'{crop_img.shape=}')
+    # cv.imshow('123', crop_img)
+    # cv.waitKey(0)
     # Инвертироваие цвета
     crop_img = 255 - crop_img
     crop_img = cv.resize(crop_img, (65, 65), interpolation=cv.INTER_AREA)
+    # cv.imshow('123', crop_img)
+    # cv.waitKey(0)
     # Добавление отступов
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
     crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
@@ -40,6 +56,8 @@ def conv_img(img):
     crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
     # Сжатие до 28, 28
     crop_img = cv.resize(crop_img, (28, 28))
+    # cv.imshow('123', crop_img)
+    # cv.waitKey(0)
     return img_gray, crop_img
 
 
@@ -71,9 +89,10 @@ def save_file(cl, img, sub='raw'):
 
 if __name__ == '__main__':
     # save_file()
-    # np_arr = cv.imread('./2.jpg')
+    # np_arr = cv.imread('./test1.png')
     # np_arr = cv.imread('./img/raw/6-2.jpg')
     # np_arr = cv.imread('./img/raw/6-img_154.png')
-    np_arr = cv.imread('./imgRandomRotation330.png')
+    np_arr = cv.imread('./2qQCeWW2tHw.jpg')
+    # np_arr = cv.imread('./wdH3zsiqUi8.jpg')
     conv_img(np_arr)
 
