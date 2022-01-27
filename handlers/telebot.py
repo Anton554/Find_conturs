@@ -69,7 +69,8 @@ async def qw_num(message: types.Message):
 # content_types=["photo"], state="*"
 async def download_photo(message: types.Message, state: FSMContext):
     # создаем временный файл
-    fd, path = tempfile.mkstemp(suffix='.jpg', text=True, dir='./tmp')
+
+    fd, path = tempfile.mkstemp(suffix='.jpg', text=True, dir=main.dir_prog + os.sep + 'tmp')
     await state.update_data(path_photo=path)
     await state.update_data(fd_photo=fd)
     # сохраняем фото в каталоге
@@ -82,30 +83,29 @@ async def download_photo(message: types.Message, state: FSMContext):
 async def pars_num(message: types.Message, state: FSMContext):
     state_dc = await state.get_data()
     # Обрабатываем фото и сохраняем в папке ./img
-    # try:
-    ph = img_proces.pars_img('num', img_name=state_dc['path_photo'])
-    await state.update_data(pt_ph=ph)
-    photo = open(ph, 'rb')
-    await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-    net = model_cnn.CNNNet()
-    n = torch.load('./net/cnn_net6_7_9_new1.pth')
-    net.load_state_dict(n)
-    # net = torch.load('./net/cnn_net6_7_9.pth')
-    # net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net_3ch.pth')ans_net.pth
-    pred, ver = predict(net, ph)
-    ver = print_proc_fin(ver)
-    await message.answer(f'Я на {ver}% уверен, что это - {pred}')
-    img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
-    os.remove(ph)
-    # except:
-    #     await message.answer("Контур не найден.")
-    # finally:
-    # Удаление временного файла
-    if state_dc.get('fd_photo', 0) > 0:
-        await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
-    # await state.finish()
-    # 'Повторите?'
-    await get_num(message)
+    try:
+        # сохраняем фото в папке 'raw'(серый) и 'fin'
+        ph = img_proces.pars_img('num', img_name=state_dc['path_photo'])
+        await state.update_data(pt_ph=ph)
+        photo = open(ph, 'rb')
+        await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
+        net = model_cnn.CNNNet()
+        n = torch.load('./net/cnn_net6_7_9_97.pth')
+        net.load_state_dict(n)
+        pred, ver = predict(net, ph)
+        ver = print_proc_fin(ver)
+        await message.answer(f'Я на {ver}% уверен, что это - {pred}')
+        img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
+        os.remove(ph)
+    except:
+        await message.answer("Контур не найден.")
+    finally:
+        # Удаление временного файла
+        if state_dc.get('fd_photo', 0) > 0:
+            await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
+        # await state.finish()
+        # 'Повторите?'
+        await get_num(message)
 
 
 async def get_num(message: types.Message, ):

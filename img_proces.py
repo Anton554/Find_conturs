@@ -6,6 +6,8 @@ import numpy as np
 import cv2 as cv
 import os
 
+from main import dir_prog
+
 
 def img_show(win_name, img):
     cv.imshow('window_name', img)
@@ -62,6 +64,10 @@ def conv_img(img):
 
 
 def pars_img(class_num: str, img_name: str):
+    """ Cохраняем фото в папке (серое)'raw' и 'fin'
+
+    Возвращаем полный путь к файлу в папке 'fin'
+    """
     np_arr = cv.imread(img_name)
     img_gray, img = conv_img(np_arr)
     save_file(class_num, img_gray, sub='raw')
@@ -70,12 +76,11 @@ def pars_img(class_num: str, img_name: str):
 
 
 def save_file(cl, img, sub='raw'):
-    # def save_file():
-    """ Сохраняет фото в каталоге
+    """ Сохраняет фото в каталоге sub
 
     :param img: np_arr
     :param :sub:  подкаталог
-    :return:
+    :return: полное имя сохранённого файла
     """
     # Ищем макисмальный суффикс
     ls_file = os.listdir(f'./img/{sub}')
@@ -84,7 +89,7 @@ def save_file(cl, img, sub='raw'):
     else:
         max_sufix = max([int(s.split('.')[0].split('_')[1]) for s in ls_file]) + 1
     cv.imwrite(f'./img/{sub}/{cl}-img_{max_sufix}.png', img)
-    return f'C:/Projects/IT/Python/Find_conturs/img/{sub}/{cl}-img_{max_sufix}.png'
+    return f'{dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png'
 
 
 if __name__ == '__main__':

@@ -9,10 +9,6 @@ import matplotlib.cm as cm
 
 
 def get_transform():
-    # transform = transforms.Compose([transforms.Resize((28, 28)),
-    #                             transforms.ToTensor(),
-    #                             transforms.Normalize((0.5,), (0.5,))
-    #                             ])
     transform = transforms.Compose([transforms.ToTensor(),
                                 transforms.Normalize((0.5,), (0.5,))
                                 ])
@@ -23,10 +19,6 @@ class DtLoader:
     """
     Класс объекта загрузчика
     """
-    # trainset = torchvision.datasets.MNIST('PATH_TO_STORE_TRAINSET', download=True, train=True, transform=transform)
-    # valset = torchvision.datasets.MNIST('PATH_TO_STORE_TESTSET', download=True, train=False, transform=transform)
-    # train_data_loader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=True)
-    # val_data_loader = torch.utils.data.DataLoader(valset, batch_size=32, shuffle=True)
 
     def __init__(self, train:str, val:str, test:str):
         train_data = torchvision.datasets.ImageFolder(root=train, transform=get_transform())
