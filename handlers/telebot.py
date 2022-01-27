@@ -3,8 +3,6 @@
 #
 import os
 import tempfile
-import ansamble
-import model_cnn
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -12,7 +10,7 @@ from aiogram.utils.callback_data import CallbackData
 import main
 import torch
 import img_proces
-from predict_one import predict, print_proc
+from predict_one import predict, print_proc_fin
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
@@ -44,7 +42,7 @@ def register_handlers_final(dp: Dispatcher):
 
 # commands=['start'], state="*"
 async def start(message: types.Message, state: FSMContext):
-    await message.answer("Привет! Это автобот. Я собираю фотографии для обучения нейронной сети.")
+    await message.answer("Привет! Меня зовут R2D2. Я умею распознавать рукописные цифры.")
     await qw_num(message)
 
 
@@ -62,8 +60,7 @@ async def qw_num(message: types.Message):
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='select_num'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    # question = 'Выберите цифру от 0 до 9'
-    question = 'Сфотографируйте цифру 7'
+    question = 'Сфотографируйте цифру от 0 до 9'
     # await message.answer(text=question, reply_markup=keyboard)
     await message.answer(text=question)
 
@@ -72,7 +69,7 @@ async def qw_num(message: types.Message):
 async def select_num(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     # await call.message.answer(f'Вы ввели : {callback_data["action"]} ')
     if '7' in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-    # if callback_data["action"] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        # if callback_data["action"] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
         await state.update_data(class_num=callback_data["action"])
         await call.message.answer('Теперь сфотографируйте эту цифру')
     else:
@@ -87,7 +84,7 @@ async def download_photo(message: types.Message, state: FSMContext):
     await state.update_data(fd_photo=fd)
     # сохраняем фото в каталоге
     await message.photo[-1].download(destination_file=path)
-    await message.answer("Сохранение фото ...")
+    await message.answer("Обрабатываю фото...")
     # Обработка фото
     await pars_num(message, state)
 
@@ -100,15 +97,13 @@ async def pars_num(message: types.Message, state: FSMContext):
         await state.update_data(pt_ph=ph)
         photo = open(ph, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-        # net = ansamble.AnNNet()
         # net = model_cnn.CNNNet()
         # net.load_state_dict(torch.load('./net/cnn_net_2.pth'))
         net = torch.load('./net/cnn_net6_7_9.pth')
         # net = torch.load('C:/Projects/IT/Python/Net_pytorch/net/cnn_net_3ch.pth')ans_net.pth
         pred, ver = predict(net, ph)
-        ver = print_proc(ver)
-        await message.answer(f'{ver}')
-        await message.answer(f'Ваше число - {pred}')
+        ver = print_proc_fin(ver)
+        await message.answer(f'Я на {ver}% уверен, что это - {pred}')
     except:
         await message.answer("Контур не найден.")
     finally:
@@ -128,8 +123,8 @@ async def get_num(message: types.Message, ):
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='retry_ph'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    question = 'Сохранить?'
-    # question = 'Повторите?'
+    # question = 'Сохранить?'
+    question = 'Попробуем еще раз?'
     await message.answer(text=question, reply_markup=keyboard)
 
 
@@ -141,10 +136,8 @@ async def retry_ph(call: types.CallbackQuery, callback_data: dict, state: FSMCon
         await state.finish()
         await qw_num(call.message)
     else:
-        os.remove(state_dc['pt_ph'])
-        await state.finish()
-        # await call.message.answer('Приходите ещё :-)')
-        await qw_num(call.message)
+        await call.message.answer('Приходите ещё :-)')
+
 
 async def delTemFile(fd, path):
     # закрываем дескриптор файла

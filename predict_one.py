@@ -6,8 +6,12 @@ import cv2 as cv
 def print_proc(proc):
     tx = ''
     for num, el in enumerate(proc, start=0):
-        tx += f'{num} - {round(el*100, 3)} %\n'
+        tx += f'{num} - {round(el * 100, 3)} %\n'
     return tx
+
+
+def print_proc_fin(proc):
+    return round(max(proc) * 100, 3)
 
 
 def predict(net, img_name: str):
