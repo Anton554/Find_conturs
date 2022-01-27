@@ -16,16 +16,11 @@ def print_proc_fin(proc):
 
 def predict(net, img_name: str):
     np_arr = cv.imread(img_name)  # shape [28, 28, 3]
-    # print(f'{np_arr.shape=}')
     transform = model_cnn.get_transform()
     tr = transform(np_arr)
     input = tr.reshape(1, 3, 28, 28)
-    # print(f'{input.shape=}')
     pred = net(input)
-    # print(pred)
     pred = torch.softmax(pred, dim=1)
-    # print(pred)
-    # print(f'{pred=}')
     proc = [tn.item() for tn in pred[0]]
     pred = pred.argmax()
     return pred.item(), proc

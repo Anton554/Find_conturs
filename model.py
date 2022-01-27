@@ -20,12 +20,6 @@ class DtLoader:
     """
     Класс объекта загрузчика
     """
-
-    # trainset = torchvision.datasets.MNIST('PATH_TO_STORE_TRAINSET', download=True, train=True, transform=transform)
-    # valset = torchvision.datasets.MNIST('PATH_TO_STORE_TESTSET', download=True, train=False, transform=transform)
-    # train_data_loader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=True)
-    # val_data_loader = torch.utils.data.DataLoader(valset, batch_size=32, shuffle=True)
-
     def __init__(self, train: str, val: str, test: str):
         train_data = torchvision.datasets.ImageFolder(root=train, transform=get_transform())
         val_data = torchvision.datasets.ImageFolder(root=val, transform=get_transform())
@@ -66,16 +60,9 @@ class SimpleNet(nn.Module):
         # оставляем один канал цвета
         x = x[:, :1, :, :]
         self._img_show(x)
-        # print(f'{x.shape=}')
-        # x = x.reshape(-1, 28 * 28 *3)
         x = x.reshape(-1, 28 * 28)
-        # print(f'{x.shape=}')
         # указываем функцию активации на каждом слое
         x = F.relu(self.fc1(x))
-        # print(f'{x.shape=}')
         x = F.relu(self.fc2(x))
-        # print(f'{x.shape=}')
-        # x = F.softmax(self.fc3(x))
         x = self.fc3(x)
-        # print(f'{x.shape=}')
         return x

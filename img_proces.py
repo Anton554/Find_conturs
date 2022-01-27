@@ -17,7 +17,7 @@ def img_show(win_name, img):
 def conv_img(img):
     h1, w1 = 0, 0
     # Обрезка до середины
-    print(f'{img.shape=}')
+    # print(f'{img.shape=}')
     x0 = int(img.shape[1] / 3)
     y0 = int(img.shape[0] / 3)
     img = img[y0:y0 + y0, x0:x0 + x0, :]
@@ -35,7 +35,7 @@ def conv_img(img):
         h1 = int((h-w)/2)
     else:
         w1 = int((w-h)/2)
-    print(x, y, w, h, h1)
+    # print(x, y, w, h, h1)
     # Обрезаем изображение
     crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
     # print(f'{crop_img.shape=}')
