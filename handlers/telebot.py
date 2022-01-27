@@ -90,7 +90,7 @@ async def pars_num(message: types.Message, state: FSMContext):
         photo = open(ph, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
         net = model_cnn.CNNNet()
-        n = torch.load('./net/cnn_net6_7_9_97.pth')
+        n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
         net.load_state_dict(n)
         pred, ver = predict(net, ph)
         ver = print_proc_fin(ver)
