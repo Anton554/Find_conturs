@@ -83,12 +83,12 @@ def save_file(cl, img, sub='raw'):
     :return: полное имя сохранённого файла
     """
     # Ищем макисмальный суффикс
-    ls_file = os.listdir(f'./img/{sub}')
+    ls_file = os.listdir(f'{dir_prog}/img/{sub}')
     if len(ls_file) == 0:
         max_sufix = 0
     else:
         max_sufix = max([int(s.split('.')[0].split('_')[1]) for s in ls_file]) + 1
-    cv.imwrite(f'./img/{sub}/{cl}-img_{max_sufix}.png', img)
+    cv.imwrite(f'{dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png', img)
     return f'{dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png'
 
 
