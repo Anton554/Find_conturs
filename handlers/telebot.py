@@ -11,7 +11,7 @@ import main
 import torch
 import img_proces
 import model_cnn
-from predict_one import predict, print_proc_fin
+from predict_one import predict, print_proc_fin, print_proc
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
@@ -83,29 +83,30 @@ async def download_photo(message: types.Message, state: FSMContext):
 async def pars_num(message: types.Message, state: FSMContext):
     state_dc = await state.get_data()
     # Обрабатываем фото и сохраняем в папке ./img
-    # try:
-    # сохраняем фото в папке 'raw'(серый) и 'fin'
-    ph = img_proces.pars_img('num', img_name=state_dc['path_photo'])
-    await state.update_data(pt_ph=ph)
-    photo = open(ph, 'rb')
-    await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-    net = model_cnn.CNNNet()
-    n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
-    net.load_state_dict(n)
-    pred, ver = predict(net, ph)
-    ver = print_proc_fin(ver)
-    await message.answer(f'Я на {ver}% уверен, что это - {pred}')
-    img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
-    os.remove(ph)
-    # except:
-    #     await message.answer("Контур не найден.")
-    # finally:
-    #     # Удаление временного файла
-    #     if state_dc.get('fd_photo', 0) > 0:
-    #         await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
-    #     # await state.finish()
-    #     # 'Повторите?'
-    #     await get_num(message)
+    try:
+        # сохраняем фото в папке 'raw'(серый) и 'fin'
+        ph = img_proces.pars_img('num', img_name=state_dc['path_photo'])
+        await state.update_data(pt_ph=ph)
+        photo = open(ph, 'rb')
+        await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
+        net = model_cnn.CNNNet()
+        n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
+        net.load_state_dict(n)
+        pred, ver = predict(net, ph)
+        print(print_proc(ver))
+        ver = print_proc_fin(ver)
+        await message.answer(f'Я на {ver}% уверен, что это - {pred}')
+        img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
+        os.remove(ph)
+    except:
+        await message.answer("Контур не найден.")
+    finally:
+        # Удаление временного файла
+        if state_dc.get('fd_photo', 0) > 0:
+            await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
+        # await state.finish()
+        # 'Повторите?'
+        await get_num(message)
 
 
 async def get_num(message: types.Message, ):
