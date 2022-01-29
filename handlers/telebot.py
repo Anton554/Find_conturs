@@ -85,19 +85,20 @@ async def pars_num(message: types.Message, state: FSMContext):
     # Обрабатываем фото и сохраняем в папке ./img
     try:
         # сохраняем фото в папке 'raw'(серый) и 'fin'
-        ph = img_proces.pars_img('num', img_name=state_dc['path_photo'])
-        await state.update_data(pt_ph=ph)
-        photo = open(ph, 'rb')
+        ph_raw, ph_fin = img_proces.pars_img('num', img_name=state_dc['path_photo'])
+        await state.update_data(pt_ph=ph_fin)
+        photo = open(ph_fin, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
         net = model_cnn.CNNNet()
         n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
         net.load_state_dict(n)
-        pred, ver = predict(net, ph)
+        pred, ver = predict(net, ph_fin)
         print(print_proc(ver))
         ver = print_proc_fin(ver)
         await message.answer(f'Я на {ver}% уверен, что это - {pred}')
         img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
-        os.remove(ph)
+        os.remove(ph_raw)
+        os.remove(ph_fin)
     except:
         await message.answer("Контур не найден.")
     finally:

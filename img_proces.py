@@ -9,7 +9,7 @@ import os
 from main import dir_prog
 
 
-def img_show(win_name, img):
+def img_show(img, win_name='window_name'):
     cv.imshow('window_name', img)
     cv.waitKey(0)
 
@@ -30,6 +30,8 @@ def conv_img(img):
     contour = max(contours, key=len)
     # Координаты квадрата цифры
     x, y, w, h = cv.boundingRect(contour)
+    # cv.drawContours(img, contours, -1, (255, 0, 0), 2, cv.LINE_AA, hierarchy, 1)
+    # img_show(img)
     # Поправочный коофицент для отцентровки изображения
     if h > w:
         h1 = int((h-w)/2)
@@ -39,13 +41,11 @@ def conv_img(img):
     # Обрезаем изображение
     crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
     # print(f'{crop_img.shape=}')
-    # cv.imshow('123', crop_img)
-    # cv.waitKey(0)
+    # img_show(crop_img)
     # Инвертироваие цвета
     crop_img = 255 - crop_img
     crop_img = cv.resize(crop_img, (65, 65), interpolation=cv.INTER_AREA)
-    # cv.imshow('123', crop_img)
-    # cv.waitKey(0)
+    # img_show(crop_img)
     # Добавление отступов
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
     crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
@@ -58,8 +58,7 @@ def conv_img(img):
     crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
     # Сжатие до 28, 28
     crop_img = cv.resize(crop_img, (28, 28))
-    # cv.imshow('123', crop_img)
-    # cv.waitKey(0)
+    # img_show(crop_img)
     return img_gray, crop_img
 
 
@@ -70,9 +69,9 @@ def pars_img(class_num: str, img_name: str):
     """
     np_arr = cv.imread(img_name)
     img_gray, img = conv_img(np_arr)
-    save_file(class_num, img_gray, sub='raw')
-    ph = save_file(class_num, img, sub='fin')
-    return ph
+    ph_raw = save_file(class_num, img_gray, sub='raw')
+    ph_fin = save_file(class_num, img, sub='fin')
+    return ph_raw, ph_fin
 
 
 def save_file(cl, img, sub='raw'):
