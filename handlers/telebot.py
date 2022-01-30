@@ -15,6 +15,11 @@ from predict_one import predict, print_proc_fin, print_proc
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
+# Создание объекта модели нейронной сети
+net = model_cnn.CNNNet()
+n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
+net.load_state_dict(n)
+
 
 class StatusAvto(StatesGroup):
     set_num = State()
@@ -65,7 +70,6 @@ async def qw_num(message: types.Message):
     await message.answer(text=question)
 
 
-
 # content_types=["photo"], state="*"
 async def download_photo(message: types.Message, state: FSMContext):
     # создаем временный файл
@@ -89,9 +93,6 @@ async def pars_num(message: types.Message, state: FSMContext):
         await state.update_data(pt_ph=ph_fin)
         photo = open(ph_fin, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-        net = model_cnn.CNNNet()
-        n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
-        net.load_state_dict(n)
         pred, ver = predict(net, ph_fin)
         print(print_proc(ver))
         ver = print_proc_fin(ver)

@@ -20,7 +20,9 @@ def conv_img(img):
     # print(f'{img.shape=}')
     x0 = int(img.shape[1] / 3)
     y0 = int(img.shape[0] / 3)
+    # print(x0, y0)
     img = img[y0:y0 + y0, x0:x0 + x0, :]
+    # img_show(img)
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Умное распознование
@@ -30,16 +32,40 @@ def conv_img(img):
     contour = max(contours, key=len)
     # Координаты квадрата цифры
     x, y, w, h = cv.boundingRect(contour)
-    # cv.drawContours(img, contours, -1, (255, 0, 0), 2, cv.LINE_AA, hierarchy, 1)
+    cv.rectangle(img, (x-8, y-8), (x + w+8, y + h+8), (0, 255, 0), 2)
+    # cv.drawContours(img, contours, -1, (255, 0, 0), 1, cv.LINE_AA, hierarchy, 1)
     # img_show(img)
     # Поправочный коофицент для отцентровки изображения
     if h > w:
         h1 = int((h-w)/2)
     else:
         w1 = int((w-h)/2)
+    # Исправление контуров изображения
+    x1 = y-w1-10
+    y1 = y + w1+10+h
+    x2 = x-h1-10
+    y2 = x + w + h1+10
+
+    while x0 <= x1:
+        x1 -= 1
+    while y0 <= y1:
+        y1 -= 1
+
+    while x2 < 0:
+        x2 += 1
+    while y2 < 0:
+        y2 += 1
+
+    while x1 < 0:
+        x1 += 1
+    while y1 < 0:
+        y1 += 1
+
     # print(x, y, w, h, h1)
     # Обрезаем изображение
-    crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
+    # print(y-w1-10, y + w1+10 + h, x-h1-10, x + w + h1+10)
+    crop_img = img[x1:y1, x2:y2]
+    # crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
     # print(f'{crop_img.shape=}')
     # img_show(crop_img)
     # Инвертироваие цвета
