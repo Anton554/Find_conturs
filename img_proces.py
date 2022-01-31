@@ -76,7 +76,7 @@ def conv_img(img):
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
     crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
     # Убираем серый цвет
-    crop_img = cv.threshold(crop_img, 140, 255, cv.THRESH_BINARY)[1]
+    crop_img = cv.threshold(crop_img, 12,0, 255, cv.THRESH_BINARY)[1]
     # Утолщение
     kernel = np.ones((3, 3), np.uint8)
     crop_img = cv.dilate(crop_img, kernel, iterations=1)
