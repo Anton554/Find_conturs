@@ -11,6 +11,7 @@ import main
 import torch
 import img_proces
 import model_cnn
+from pdf_proces import start_det, del_tmpfile
 from predict_one import predict, print_proc_fin, print_proc
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
@@ -19,7 +20,6 @@ cb_avtobot = CallbackData('pref', 'action', 'step')
 net = model_cnn.CNNNet()
 n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
 net.load_state_dict(n)
-
 
 class StatusAvto(StatesGroup):
     set_num = State()
@@ -33,6 +33,7 @@ def register_handlers(dp: Dispatcher):
     """
     dp.register_message_handler(start, commands=['start'], state="*")
     dp.register_message_handler(download_photo, content_types=["photo"], state="*")
+    dp.register_message_handler(download_pdf, content_types=["document"], state="*")
     dp.register_callback_query_handler(retry_ph, cb_avtobot.filter(step=["retry_ph"]), state="*")
 
 
@@ -70,10 +71,11 @@ async def qw_num(message: types.Message):
     await message.answer(text=question)
 
 
+
+
 # content_types=["photo"], state="*"
 async def download_photo(message: types.Message, state: FSMContext):
     # создаем временный файл
-
     fd, path = tempfile.mkstemp(suffix='.jpg', text=True, dir=main.dir_prog + os.sep + 'tmp')
     await state.update_data(path_photo=path)
     await state.update_data(fd_photo=fd)
@@ -82,6 +84,21 @@ async def download_photo(message: types.Message, state: FSMContext):
     await message.answer("Обрабатываю фото...")
     # Обработка фото
     await pars_num(message, state)
+
+
+# content_types=["document"], state="*"
+async def download_pdf(message: types.Message, state: FSMContext):
+    # создаем временный файл
+    path = tempfile.mktemp(suffix='.pdf', dir=main.dir_prog + os.sep + 'tmp')
+    await state.update_data(path_pdf=path)
+    # сохраняем pdf в каталоге
+    await message.document.download(destination_file=path)
+    await message.answer("Распознавание pdf...")
+    # Распознавание pdf
+    result_png = start_det(path)
+    png_file = open(result_png, 'rb')
+    await main.bot.send_photo(chat_id=message.chat.id, photo=png_file)
+    os.remove(result_png)
 
 
 async def pars_num(message: types.Message, state: FSMContext):
@@ -119,7 +136,6 @@ async def get_num(message: types.Message, ):
         btn = types.InlineKeyboardButton(text=action, callback_data=cb_avtobot.new(action=action, step='retry_ph'))
         ls_btn.append(btn)
     keyboard.add(*ls_btn)
-    # question = 'Сохранить?'
     question = 'Попробуем еще раз?'
     await message.answer(text=question, reply_markup=keyboard)
 
