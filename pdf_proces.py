@@ -5,7 +5,8 @@ import fitz
 import os
 import cv2 as cv
 import tempfile
-from main import mode_yolo
+
+from main import mode_yolo, dir_prog
 
 
 def png2jpg(filename):
@@ -37,7 +38,7 @@ def exp_img(path_img):
     xref = images[0][0]
     pix = fitz.Pixmap(pdf_document, xref)
     # создаем временный файл
-    path = tempfile.mktemp(suffix='.png', dir='tmp')
+    path = tempfile.mktemp(suffix='.png', dir = dir_prog + os.sep + 'tmp')
     pix.save(path)
     return path
 
@@ -58,7 +59,7 @@ def detect_blank(img_name):
         # cls = int(results.xyxy[0][n:n + 1, :][0][5].item())
         # print(f"{x1=} {y1=} {x2=} {y2=} {pred=}% {cls=}")
         cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 255, 0), 1)
-    result_png = tempfile.mktemp(suffix='.png', dir='tmp')
+    result_png = tempfile.mktemp(suffix='.png', dir=dir_prog + os.sep + 'tmp')
     cv.imwrite(result_png, np_arr)
     return result_png
 
