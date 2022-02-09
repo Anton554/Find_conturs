@@ -9,13 +9,12 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import os
 
-# Загрузка модели нейронной сети Yolov5_m
-mode_yolo = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5_m_300ep.pt')
-
 bot = Bot(token=setup.token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dir_prog = os.path.dirname(os.path.abspath(__file__))
 
+# Загрузка модели нейронной сети Yolov5_m
+mode_yolo = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog+os.sep+'net/yolov5_m_300ep.pt')
 
 async def main():
     logging.basicConfig(level=logging.INFO)
