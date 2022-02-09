@@ -18,7 +18,7 @@ cb_avtobot = CallbackData('pref', 'action', 'step')
 
 # Создание объекта модели нейронной сети
 net = model_cnn.CNNNet()
-n = torch.load(main.dir_prog + '/net/cnn_net6_7_9_97.pth')
+n = torch.load(main.dir_prog +os.sep+ 'net/cnn_net6_7_9_97.pth')
 net.load_state_dict(n)
 
 class StatusAvto(StatesGroup):
