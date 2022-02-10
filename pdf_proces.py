@@ -58,7 +58,7 @@ def detect_blank(img_name):
         # pred = round(results.xyxy[0][n:n + 1, :][0][4].item() * 100, 2)
         # cls = int(results.xyxy[0][n:n + 1, :][0][5].item())
         # print(f"{x1=} {y1=} {x2=} {y2=} {pred=}% {cls=}")
-        cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 255, 0), 1)
+        cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 100, 0), 1)
     result_png = tempfile.mktemp(suffix='.png', dir=dir_prog + os.sep + 'tmp')
     cv.imwrite(result_png, np_arr)
     return result_png
