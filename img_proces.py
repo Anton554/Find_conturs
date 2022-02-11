@@ -10,11 +10,16 @@ from main import dir_prog
 
 
 def img_show(img, win_name='window_name'):
-    cv.imshow('window_name', img)
+    cv.imshow(win_name, img)
     cv.waitKey(0)
 
 
 def conv_img(img):
+    """ Преобразует серое изобр. в чёрно-белое 28 x 28
+
+    :param img: np_arr
+    :return: np_arr(серое), np_arr(чёрно-белое 28 x 28)
+    """
     h1, w1 = 0, 0
     # Обрезка до середины
     # print(f'{img.shape=}')
@@ -22,7 +27,7 @@ def conv_img(img):
     y0 = int(img.shape[0] / 3)
     # print(x0, y0)
     img = img[y0:y0 + y0, x0:x0 + x0, :]
-    # img_show(img)
+    # img_show(img, 'win_1')
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Умное распознование
@@ -34,7 +39,7 @@ def conv_img(img):
     x, y, w, h = cv.boundingRect(contour)
     cv.rectangle(img, (x-8, y-8), (x + w+8, y + h+8), (0, 255, 0), 2)
     # cv.drawContours(img, contours, -1, (255, 0, 0), 1, cv.LINE_AA, hierarchy, 1)
-    # img_show(img)
+    # img_show(img, 'win_2')
     # Поправочный коофицент для отцентровки изображения
     if h > w:
         h1 = int((h-w)/2)
@@ -60,36 +65,42 @@ def conv_img(img):
         x1 += 1
     while y1 < 0:
         y1 += 1
-
     # print(x, y, w, h, h1)
     # Обрезаем изображение
-    # print(y-w1-10, y + w1+10 + h, x-h1-10, x + w + h1+10)
     crop_img = img[x1:y1, x2:y2]
-    # crop_img = img[y-w1:y + w1 + h, x-h1:x + w + h1]
-    # print(f'{crop_img.shape=}')
-    # img_show(crop_img)
+    # img_show(crop_img, 'win_3')
     # Инвертироваие цвета
     crop_img = 255 - crop_img
     crop_img = cv.resize(crop_img, (65, 65), interpolation=cv.INTER_AREA)
-    # img_show(crop_img)
+    # img_show(crop_img, 'Invert color')
     # Добавление отступов
     crop_img = cv.copyMakeBorder(crop_img, 10, 10, 10, 10, cv.BORDER_CONSTANT, value=[0, 0, 0, 0])
     crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
+    # img_show(crop_img, 'copyMakeBorder')
     # Убираем серый цвет
-    crop_img = cv.threshold(crop_img, 12,0, 255, cv.THRESH_BINARY)[1]
+    _, crop_img = cv.threshold(crop_img, 120, 255, cv.THRESH_BINARY)
+    # img_show(crop_img, 'Delete Gray')
+    # Удаление шума
+    # !!! При обработки бланков необходимо   kernel = np.ones((3,3),np.uint8)
+    kernel = np.ones((1,1), np.uint8)
+    crop_img = cv.morphologyEx(crop_img, cv.MORPH_OPEN, kernel)
+    # img_show(crop_img, 'morphologyEx')
     # Утолщение
     kernel = np.ones((3, 3), np.uint8)
     crop_img = cv.dilate(crop_img, kernel, iterations=1)
+    # img_show(crop_img, 'dilate')
     # Размытие по гаусу
-    crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
+    # Убрано т.к. уменьшает процент предсказания
+    # crop_img = cv.GaussianBlur(crop_img, (3, 3), cv.BORDER_DEFAULT)
+    # img_show(crop_img, 'win_8')
     # Сжатие до 28, 28
     crop_img = cv.resize(crop_img, (28, 28))
-    # img_show(crop_img)
+    # img_show(crop_img, 'win_9')
     return img_gray, crop_img
 
 
 def pars_img(class_num: str, img_name: str):
-    """ Cохраняем фото в папке (серое)'raw' и 'fin'
+    """ Cохраняем фото в папке 'raw'(серое) и в папке 'fin' картинку 28 x 28 ч.б.
 
     Возвращаем полный путь к файлу в папке 'fin'
     """
