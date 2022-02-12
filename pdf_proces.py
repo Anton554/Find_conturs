@@ -46,7 +46,7 @@ def exp_img(path_img):
 def detect_blank(img_name):
     """ Распознавание изображения моделью Yolov5_m
     """
-    results = mode_yolo(img_name, size=720)
+    results = mode_yolo(img_name, size=1024)
     # Отрисовка контуров найденых цифр
     np_arr = cv.imread(img_name)
     cn_img = results.xyxy[0].size()[0]
