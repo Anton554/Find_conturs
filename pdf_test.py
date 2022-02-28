@@ -49,7 +49,8 @@ def find_center(res, np_arr):
 
     :param res: Тензор с координатами
     :param np_arr: Np_mas массив изображения
-    :return: [координата х, координата у, класификация, np_mas изображения]
+    :return: [[координата х, координата у, класификация, np_mas изображения],
+     [координата х, координата у, класификация, np_mas изображения]]
     """
     rez = []
     for tn in res.xyxy[0]:
@@ -62,11 +63,12 @@ def find_center(res, np_arr):
     return rez
 
 
-def my_fn(results_vr):
-    """
+def find_coord(results_vr):
+    """Находит крайнии точки варианта
+    Принимает тензор с данными, возвращает словарь номер: координаты
 
-    :param results_vr:
-    :return:
+    :param results_vr: Тензор из нейроки
+    :return: Словарь типа {номер: [x1, y1, x2, y2]}
     """
     dc = {}
     cn_img = results_vr.xyxy[0].size()[0]
@@ -76,27 +78,28 @@ def my_fn(results_vr):
         x2 = int(results_vr.xyxy[0][n:n + 1, :][0][2].item()) * 4
         y2 = int(results_vr.xyxy[0][n:n + 1, :][0][3].item())
         num = int(results_vr.xyxy[0][n:n + 1, :][0][5].item())
-        # pred = round(results_vr.xyxy[0][n:n + 1, :][0][4].item() * 100, 2)
         dc[num + 1] = [x1, y1, x2, y2]
     return dc
 
 
-def my_fn2(num_v, ls_obj):
-    """
+def my_fn2(num_v: dict, ls_ans: list):
+    """Соотносит варианты и ответы на задания
+    Принимает словарь вариантов и список объектов num and no_num, возвращает изображение объекта num and no_num
+    находящегося вдутри границ варианта
 
-    :param num_v:
-    :param ls_obj:
-    :return:
+    :param num_v: Словарь {номер: [x, y, x, y]}
+    :param ls_ans: Список ответов
+    :return: <class 'dict'> вида {номер: [[np_arr], [np_arr]]}
     """
     dc = {}
     ls = []
-    ls_obj = sorted(ls_obj, key=lambda x: x[1])
+    ls_ans = sorted(ls_ans, key=lambda x: x[1])
     for coord in num_v.items():
-        for el in ls_obj:
+        for el in ls_ans:
             if (coord[1][0] <= el[1] and coord[1][1] <= el[0]) and (coord[1][2] >= el[1] and coord[1][3] >= el[0]):
                 ls.extend([el[-1], el[2]])
-                cv.imshow('Win_img', el[-1])
-                cv.waitKey(0)
+                # cv.imshow('Win_img', el[-1])
+                # cv.waitKey(0)
         dc[coord[0]] = [ls]
         ls = []
     return dc
@@ -105,7 +108,7 @@ def my_fn2(num_v, ls_obj):
 if __name__ == '__main__':
     cv.imwrite('result.jpg', np_arr)
     ls_obj = find_center(results_num, np_arr_etl)
-    obj_vr = my_fn(results_vr)
+    obj_vr = find_coord(results_vr)
     pprint.pprint(my_fn2(obj_vr, ls_obj))
 
 # cv.imshow('Win_img', np_arr)
