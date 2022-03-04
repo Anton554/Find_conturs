@@ -35,17 +35,6 @@ for n in range(cn_img):
 
     cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 50, 0), 1)
 
-    # if cls == 0 and pred > 50:
-    #     cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 50, 0), 1)
-    # elif cls == 1 and pred > 30:
-    #     cv.rectangle(np_arr, (x1, y1), (x2, y2), (0, 0, 255), 1)
-    # elif cls > 1 and pred > 50:
-    #     cv.rectangle(np_arr, (x1, y1), (x2, y2), (10, 255, 10), 1)
-
-
-# cv.imshow('Win_img', np_arr)
-# cv.waitKey(0)
-
 
 def find_center(res, np_arr):
     """ Возвращает список объектов num and no_num
@@ -63,10 +52,11 @@ def find_center(res, np_arr):
             y = (ls[2] - ls[0]) / 2 + ls[0]
             np = np_arr[int(ls[1]):int(ls[3]), int(ls[0]):int(ls[2]), :]
             rez.append([x, y, int(ls[-1]), np])
+    rez = remov(res, np_arr, rez)
     return rez
 
 
-def remov(res, ls: list):
+def remov(res, np_arr, ls: list):
     """Убирает ошибочные символы
     Принимает тензор с данными и список объектов num and no_num
     типа [[координата х, координата у, класификация, np_mas изображения],
@@ -74,12 +64,14 @@ def remov(res, ls: list):
     Возвращает список объектов num and no_num в котором отсутствуют ошибочные символы.
 
     :param res: Тензор из нейроки
+    :param np_arr: Np_mas массив изображения
     :param ls: [[координата х, координата у, класификация, np_mas изображения],
      [координата х, координата у, класификация, np_mas изображения]]
     :return: [[координата х, координата у, класификация, np_mas изображения],
      [координата х, координата у, класификация, np_mas изображения]]
     """
     rez_dc = {}
+    fin_ls = []
     ls_v = []
     for el in ls:
         for tn in res.xyxy[0]:
@@ -94,7 +86,13 @@ def remov(res, ls: list):
         rez_dc[s] = ls_v
         ls_v = []
     rez = [el for el in rez_dc.values()]
-    return rez
+    for ls in rez:
+        if ls[-1] == 1 or ls[-1] == 0:
+            x = (ls[3] - ls[1]) / 2 + ls[1]
+            y = (ls[2] - ls[0]) / 2 + ls[0]
+            np = np_arr[int(ls[1]):int(ls[3]), int(ls[0]):int(ls[2]), :]
+            fin_ls.append([x, y, int(ls[-1]), np])
+    return fin_ls
 
 
 def find_coord(results_vr):
@@ -158,8 +156,8 @@ def relate_num(num_v: dict, ls_ans: list):
     for coord in num_v.items():
         for el in ls_ans:
             if (coord[1][0] <= el[1] and coord[1][1] <= el[0]) and (coord[1][2] >= el[1] and coord[1][3] >= el[0]):
-                # ls.append([el[-1], el[2]])
-                # cv.imshow('Win_img', el[-1])
+                ls.append([el[-1], el[2]])
+                cv.imshow('Win_img', el[-1])
                 cv.waitKey(0)
         dc[coord[0]] = [ls]
         ls = []
@@ -171,11 +169,8 @@ if __name__ == '__main__':
     ls_obj = find_center(results_num, np_arr_etl)
     obj_vr = find_coord(results_vr)
     obj_vr = real_num(obj_vr)
-    remov(results_num, ls_obj)
     dc = relate_num(obj_vr, ls_obj)
-    # for el in dc.values():
-    #     cv.imshow('Win_img', el)
-    #     cv.waitKey(0)
+    pprint.pprint(dc)
 
 # cv.imshow('Win_img', np_arr)
 # cv.waitKey(0)
