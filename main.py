@@ -13,8 +13,10 @@ bot = Bot(token=setup.token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dir_prog = os.path.dirname(os.path.abspath(__file__))
 
+
 # Загрузка модели нейронной сети Yolov5_m
-mode_yolo = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog+os.sep+'net/yolov5_m_200ep_4bt.pt')
+mode_yolo = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5_m_200ep_4bt.pt')
+
 
 async def main():
     logging.basicConfig(level=logging.INFO)

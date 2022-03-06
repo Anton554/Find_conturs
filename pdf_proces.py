@@ -38,7 +38,7 @@ def exp_img(path_img):
     xref = images[0][0]
     pix = fitz.Pixmap(pdf_document, xref)
     # создаем временный файл
-    path = tempfile.mktemp(suffix='.png', dir = dir_prog + os.sep + 'tmp')
+    path = tempfile.mktemp(suffix='.png', dir=dir_prog + os.sep + 'tmp')
     pix.save(path)
     return path
 
@@ -74,16 +74,14 @@ def del_tmpfile(filename, typ):
     os.remove(f'{portion[0]}.{typ}')
 
 
-
 def start_det(pdf_name):
     img_name = exp_img(pdf_name)
     img_name = png2jpg(img_name)
-    result_png = detect_blank(img_name)
-    del_tmpfile(img_name, 'jpg')
+    # result_png = detect_blank(img_name)
+    # del_tmpfile(img_name, 'jpg')
     del_tmpfile(img_name, 'png')
     del_tmpfile(pdf_name, 'pdf')
-    return result_png
-
+    return img_name
 
 
 if __name__ == '__main__':

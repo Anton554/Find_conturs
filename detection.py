@@ -1,26 +1,22 @@
-import copy
+"""
+Библиотека функций для детектирования объектов на бланке ответов ЕГЭ
+"""
 import pprint
-
-import torch
+from img_proces import conv_img_pdf
 import cv2 as cv
+from predict_one import predict
 
-# Model
-model_vr = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5s_300ep_8bt_40v.pt', device='cpu')
-model_num = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5_m_200ep_4bt.pt', device='cpu')
-model_num.conf = 0.40
-model_vr.conf = 0.60
+
 # Images
-img = './img/ege/2_num.jpg'  # or file, Path, PIL, OpenCV, numpy, list
+# img = './img/ege/2_num.jpg'  # or file, Path, PIL, OpenCV, numpy, list
 # Inference
-results_vr = model_vr(img, size=1024)
-results_num = model_num(img, size=1024)
 # Results
-results_vr.print()  # or .show(), .save(), .crop(), .pandas(), etc.
-results_num.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+# results_vr.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+# results_num.print()  # or .show(), .save(), .crop(), .pandas(), etc.
 # results.crop()
 
 # Отрисовка контуров найденых цифр
-np_arr = cv.imread(img)
+"""np_arr = cv.imread(img)
 np_arr_etl = copy.copy(np_arr)
 cn_img = results_vr.xyxy[0].size()[0]
 for n in range(cn_img):
@@ -33,7 +29,7 @@ for n in range(cn_img):
     cls = int(results_vr.xyxy[0][n:n + 1, :][0][5].item())
     # print(f"{x1=} {y1=} {x2=} {y2=} {pred=}% {cls=}")
 
-    cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 50, 0), 1)
+    cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 50, 0), 1)"""
 
 
 def find_center(res, np_arr):
@@ -157,21 +153,62 @@ def relate_num(num_v: dict, ls_ans: list):
         for el in ls_ans:
             if (coord[1][0] <= el[1] and coord[1][1] <= el[0]) and (coord[1][2] >= el[1] and coord[1][3] >= el[0]):
                 ls.append([el[-1], el[2]])
-                cv.imshow('Win_img', el[-1])
-                cv.waitKey(0)
+                # cv.imshow('Win_img', el[-1])
+                # cv.waitKey(0)
         dc[coord[0]] = [ls]
         ls = []
     return dc
 
 
-if __name__ == '__main__':
-    cv.imwrite('result.jpg', np_arr)
+def detekt(dc_obj: dict, net):
+    """
+
+    :param dc_obj: <class 'dict'> вида {1: [[np_arr, cls], [np_arr, cls]]}
+    :return: <class 'dict'> вида {1: '-0,7'}
+    """
+    dc = {}
+    for el in dc_obj.items():
+        st = raspozn(el[1], net)
+        dc[el[0]] = st
+    return dc
+
+
+def raspozn(ls: list, net):
+    """
+
+    :param ls: [[np_arr, cls], [np_arr, cls]]
+    :return: <class 'str'> вида '-0,7'
+    """
+    st = ''
+    for num, el in enumerate(ls[0], start=1):
+        if num == 1 and el[1] == 1:
+            st += '-'
+        elif el[1] == 1:
+            st += ','
+        else:
+            img = conv_img_pdf(el[0])
+            cv.imwrite(f'crop_img.png', img)
+            pred, ver = predict(net, 'crop_img.png')
+            st += str(pred)
+    return st
+
+
+def pdf_start(results_num, results_vr, img, net):
+    np_arr_etl = cv.imread(img)
     ls_obj = find_center(results_num, np_arr_etl)
     obj_vr = find_coord(results_vr)
     obj_vr = real_num(obj_vr)
-    dc = relate_num(obj_vr, ls_obj)
-    pprint.pprint(dc)
+    dc_obj = relate_num(obj_vr, ls_obj)
+    pprint.pprint(detekt(dc_obj, net))
 
+if __name__ == '__main__':
+    pass
+    # cv.imwrite('result.jpg', np_arr)
+    # ls_obj = find_center(results_num, np_arr_etl)
+    # obj_vr = find_coord(results_vr)
+    # obj_vr = real_num(obj_vr)
+    # dc_obj = relate_num(obj_vr, ls_obj)
+    # pprint.pprint(detekt(dc_obj))
 # cv.imshow('Win_img', np_arr)
 # cv.waitKey(0)
 # cv.destroyWindow('Win_img')

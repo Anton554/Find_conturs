@@ -13,12 +13,20 @@ import img_proces
 import model_cnn
 from pdf_proces import start_det, del_tmpfile
 from predict_one import predict, print_proc_fin, print_proc
+from detection import pdf_start
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
 # Создание объекта модели нейронной сети
 net = model_cnn.CNNNet()
 n = torch.load(main.dir_prog +os.sep+ 'net/cnn_net6_7_9_97.pth')
+
+# Вызов
+model_vr = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5s_300ep_8bt_40v.pt', device='cpu')
+model_num = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5_m_200ep_4bt.pt', device='cpu')
+model_num.conf = 0.40
+model_vr.conf = 0.60
+
 net.load_state_dict(n)
 
 class StatusAvto(StatesGroup):
@@ -96,6 +104,9 @@ async def download_pdf(message: types.Message, state: FSMContext):
     await message.answer("Распознавание pdf...")
     # Распознавание pdf
     result_png = start_det(path)
+    results_vr = model_vr(result_png, size=1024)
+    results_num = model_num(result_png, size=1024)
+    pdf_start(results_num, results_vr, result_png, net)
     png_file = open(result_png, 'rb')
     await main.bot.send_photo(chat_id=message.chat.id, photo=png_file)
     os.remove(result_png)
@@ -104,25 +115,25 @@ async def download_pdf(message: types.Message, state: FSMContext):
 async def pars_num(message: types.Message, state: FSMContext):
     state_dc = await state.get_data()
     # Обрабатываем фото и сохраняем в папке ./img
-    try:
-        # сохраняем фото в папке 'raw'(серый) и 'fin'
-        ph_raw, ph_fin = img_proces.pars_img('num', img_name=state_dc['path_photo'])
-        await state.update_data(pt_ph=ph_fin)
-        photo = open(ph_fin, 'rb')
-        await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-        pred, ver = predict(net, ph_fin)
-        print(print_proc(ver))
-        ver = print_proc_fin(ver)
-        await message.answer(f'Я на {ver}% уверен, что это - {pred}')
-        img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
-        os.remove(ph_raw)
-        os.remove(ph_fin)
-    except:
-        await message.answer("Контур не найден.")
-    finally:
+    # try:
+    # сохраняем фото в папке 'raw'(серый) и 'fin'
+    ph_raw, ph_fin = img_proces.pars_img('num', img_name=state_dc['path_photo'])
+    await state.update_data(pt_ph=ph_fin)
+    photo = open(ph_fin, 'rb')
+    await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
+    pred, ver = predict(net, ph_fin)
+    print(print_proc(ver))
+    ver = print_proc_fin(ver)
+    await message.answer(f'Я на {ver}% уверен, что это - {pred}')
+    img_proces.pars_img(f'{pred}', img_name=state_dc['path_photo'])
+    os.remove(ph_raw)
+    os.remove(ph_fin)
+    # except:
+    #     await message.answer("Контур не найден.")
+    # finally:
         # Удаление временного файла
-        if state_dc.get('fd_photo', 0) > 0:
-            await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
+    if state_dc.get('fd_photo', 0) > 0:
+        await delTemFile(state_dc['fd_photo'], state_dc['path_photo'])
         # await state.finish()
         # 'Повторите?'
         await get_num(message)
