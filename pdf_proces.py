@@ -43,6 +43,11 @@ def exp_img(path_img):
 
 
 def pdf2jpg(pdf_name):
+    """ PDF --> JPG
+
+    :param path_img: Путь до PDF
+    :return: file.jpg
+    """
     img_png = exp_img(pdf_name)
     img_jpg = png2jpg(img_png)
     os.remove(img_png)

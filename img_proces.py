@@ -29,7 +29,7 @@ def conv_img(img):
     y0 = int(img.shape[0] / 3)
     # print(x0, y0)
     img = img[y0:y0 + y0, x0:x0 + x0, :]
-    img_show(img, 'win_1')
+    # img_show(img, 'win_1')
     # Превращаем в черно-белое изображение
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Умное распознование

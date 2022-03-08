@@ -116,14 +116,14 @@ if __name__ == "__main__":
     # Создание загрузчика
     loader = model.DtLoader('./img/train', './img/val', './img/test')
     print('Загрузчик создан')
-    # net = model.SimpleNet()
+    # net_cnn = model.SimpleNet()
     net = model_cnn.CNNNet()
-    # net = ansamble.AnNNet()
+    # net_cnn = ansamble.AnNNet()
     optimizator = optim.Adam(net.parameters(), lr=0.001)
     print('Запуск обучения')
     train(net, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader, epochs=10)
     print('Сохранение модели')
-    # torch.save(net.state_dict(), './net/cnn_net_2.pth')
+    # torch.save(net_cnn.state_dict(), './net_cnn/cnn_net_2.pth')
     torch.save(net.state_dict(), 'net/cnn_net6_7_9_97.pth')
     print('Модель сохранена.')
 

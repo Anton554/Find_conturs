@@ -13,20 +13,14 @@ import img_proces
 import model_cnn
 from pdf_proces import pdf2jpg
 from predict_one import predict, print_proc_fin, print_proc
-from detection import scan_pdf
+from detection import scan_pdf, show_result, draw_conturs
 
 cb_avtobot = CallbackData('pref', 'action', 'step')
 
 # Создание объекта модели нейронной сети
-net = model_cnn.CNNNet()
+net_cnn = model_cnn.CNNNet()
 state_dict = torch.load(main.dir_prog +os.sep+ 'net/cnn_net1_6_7_9_xz.pth')
-net.load_state_dict(state_dict)
-
-# model_vr = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5s_300ep_8bt_40v.pt', device='cpu')
-# model_num = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5_m_200ep_4bt.pt', device='cpu')
-# model_num.conf = 0.40
-# model_vr.conf = 0.60
-
+net_cnn.load_state_dict(state_dict)
 
 
 class StatusAvto(StatesGroup):
@@ -79,8 +73,6 @@ async def qw_num(message: types.Message):
     await message.answer(text=question)
 
 
-
-
 # content_types=["photo"], state="*"
 async def download_photo(message: types.Message, state: FSMContext):
     # создаем временный файл
@@ -106,10 +98,12 @@ async def download_pdf(message: types.Message, state: FSMContext):
     img_jpg = pdf2jpg(path_pdf)
     results_vr = main.model_vr(img_jpg, size=1024)
     results_num = main.model_num(img_jpg, size=1024)
-    dc_detect = scan_pdf(results_num, results_vr, img_jpg, net)
-    print(dc_detect)
+    draw_conturs(results_num, img_jpg)
     with open(img_jpg, 'rb') as jpg_file:
         await main.bot.send_photo(chat_id=message.chat.id, photo=jpg_file)
+    dc_detect = scan_pdf(results_num, results_vr, img_jpg, net_cnn)
+    res = show_result(dc_detect)
+    await message.answer(res)
     os.remove(path_pdf)
     os.remove(img_jpg)
 
@@ -123,7 +117,7 @@ async def pars_num(message: types.Message, state: FSMContext):
         await state.update_data(pt_ph=ph_fin)
         photo = open(ph_fin, 'rb')
         await main.bot.send_photo(chat_id=message.chat.id, photo=photo)
-        pred, ver = predict(net, ph_fin)
+        pred, ver = predict(net_cnn, ph_fin)
         print(print_proc(ver))
         ver = print_proc_fin(ver)
         await message.answer(f'Я на {ver}% уверен, что это - {pred}')

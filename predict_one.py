@@ -29,8 +29,8 @@ def predict(net, img):
 
 
 if __name__ == '__main__':
-    net = torch.load('C:/Projects/IT/Python/Find_conturs/net/cnn_net6_7_9_97.pth')
+    net = torch.load('C:/Projects/IT/Python/Find_conturs/net_cnn/cnn_net6_7_9_97.pth')
     pred, proc = predict(net, './img/fin/8-img_51.png')
-    # pred, proc = predict(net, './img/predict/num-362.jpg')
+    # pred, proc = predict(net_cnn, './img/predict/num-362.jpg')
     print(print_proc(proc))
     print(f'Ваше число - {pred}')
