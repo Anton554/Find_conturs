@@ -6,8 +6,7 @@ import os
 import cv2 as cv
 import tempfile
 
-from main import mode_yolo, dir_prog
-
+dir_prog = os.path.dirname(os.path.abspath(__file__))
 
 def png2jpg(filename):
     """ Конвертирует файл .png --> .jpg
@@ -43,49 +42,15 @@ def exp_img(path_img):
     return path
 
 
-def detect_blank(img_name):
-    """ Распознавание изображения моделью Yolov5_m
-    """
-    results = mode_yolo(img_name, size=1024)
-    # Отрисовка контуров найденых цифр
-    np_arr = cv.imread(img_name)
-    cn_img = results.xyxy[0].size()[0]
-    for n in range(cn_img):
-        x1 = int(results.xyxy[0][n:n + 1, :][0][0].item())
-        y1 = int(results.xyxy[0][n:n + 1, :][0][1].item())
-        x2 = int(results.xyxy[0][n:n + 1, :][0][2].item())
-        y2 = int(results.xyxy[0][n:n + 1, :][0][3].item())
-        pred = round(results.xyxy[0][n:n + 1, :][0][4].item() * 100, 2)
-        cls = int(results.xyxy[0][n:n + 1, :][0][5].item())
-        # print(f"{x1=} {y1=} {x2=} {y2=} {pred=}% {cls=}")
-        if cls == 0 and pred > 50:
-            cv.rectangle(np_arr, (x1, y1), (x2, y2), (255, 50, 0), 1)
-        elif cls == 1 and pred > 30:
-            cv.rectangle(np_arr, (x1, y1), (x2, y2), (0, 0, 255), 1)
-    result_png = tempfile.mktemp(suffix='.png', dir=dir_prog + os.sep + 'tmp')
-    cv.imwrite(result_png, np_arr)
-    return result_png
-
-
-def del_tmpfile(filename, typ):
-    """ Удаляем временные файлы
-    """
-    portion = os.path.splitext(filename)
-    os.remove(f'{portion[0]}.{typ}')
-
-
-def start_det(pdf_name):
-    img_name = exp_img(pdf_name)
-    img_name = png2jpg(img_name)
-    # result_png = detect_blank(img_name)
-    # del_tmpfile(img_name, 'jpg')
-    del_tmpfile(img_name, 'png')
-    del_tmpfile(pdf_name, 'pdf')
-    return img_name
+def pdf2jpg(pdf_name):
+    img_png = exp_img(pdf_name)
+    img_jpg = png2jpg(img_png)
+    os.remove(img_png)
+    return img_jpg
 
 
 if __name__ == '__main__':
-    img_name = exp_img('./bilet_3.pdf')
-    img_name = png2jpg(img_name)
-    detect_blank(img_name)
-    del_tmpfile(img_name)
+    img_png = exp_img('./bilet_3.pdf')
+    img_name = png2jpg(img_png)
+    # detect_blank(img_name)
+

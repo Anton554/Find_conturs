@@ -6,7 +6,6 @@ from img_proces import conv_img_pdf
 import cv2 as cv
 from predict_one import predict
 
-
 # Images
 # img = './img/ege/2_num.jpg'  # or file, Path, PIL, OpenCV, numpy, list
 # Inference
@@ -169,7 +168,8 @@ def detekt(dc_obj: dict, net):
     dc = {}
     for el in dc_obj.items():
         st = raspozn(el[1], net)
-        dc[el[0]] = st
+        if len(st) > 0:
+            dc[el[0]] = st
     return dc
 
 
@@ -186,30 +186,58 @@ def raspozn(ls: list, net):
         elif el[1] == 1:
             st += ','
         else:
-            img = conv_img_pdf(el[0])
-            cv.imwrite(f'crop_img.png', img)
-            pred, ver = predict(net, 'crop_img.png')
+            np_arr = conv_img_pdf(el[0])
+            pred, ver = predict(net, np_arr)
+            # print(f'{num=} {pred=} {print_proc(ver)=}%')
             st += str(pred)
     return st
 
 
-def pdf_start(results_num, results_vr, img, net):
+def scan_pdf(results_num, results_vr, img, net):
     np_arr_etl = cv.imread(img)
     ls_obj = find_center(results_num, np_arr_etl)
     obj_vr = find_coord(results_vr)
     obj_vr = real_num(obj_vr)
     dc_obj = relate_num(obj_vr, ls_obj)
-    pprint.pprint(detekt(dc_obj, net))
+    dc_detect = detekt(dc_obj, net)
+    # pprint.pprint(dc_detect)
+    return dc_detect
+
 
 if __name__ == '__main__':
-    pass
-    # cv.imwrite('result.jpg', np_arr)
-    # ls_obj = find_center(results_num, np_arr_etl)
-    # obj_vr = find_coord(results_vr)
-    # obj_vr = real_num(obj_vr)
-    # dc_obj = relate_num(obj_vr, ls_obj)
-    # pprint.pprint(detekt(dc_obj))
-# cv.imshow('Win_img', np_arr)
-# cv.waitKey(0)
-# cv.destroyWindow('Win_img')
-# print(results.xyxy[0])
+    import model_cnn
+    import torch
+    from predict_one import print_proc
+    from pdf_proces import pdf2jpg, del_tmpfile_all
+
+    # img_jpg = pdf2jpg('./img/11.pdf')
+    img_jpg = './img/15_num.jpg'
+
+    net = model_cnn.CNNNet()
+    # net.load_state_dict(torch.load('./net/cnn_net1_6_7_9_97.pth'))
+    net.load_state_dict(torch.load('./net/cnn_net1_6_7_9_xz.pth'))
+    # net.load_state_dict(torch.load('./net/cnn_net1_6_7_9_99.pth'))
+
+    model_vr = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5s_300ep_8bt_40v.pt', device='cpu')
+    model_num = torch.hub.load('ultralytics/yolov5', 'custom', './net/yolov5_m_200ep_4bt.pt', device='cpu')
+    model_num.conf = 0.4
+    model_vr.conf = 0.60
+
+    results_vr = model_vr(img_jpg, size=1024)
+    results_num = model_num(img_jpg, size=1024)
+    results_vr.print()
+    results_num.print()
+
+    dc_detect = scan_pdf(results_num, results_vr, img_jpg, net)
+    dc_etl = {1:'0,1', 2:'2', 3:'45', 4:'67', 5:'-7', 6:'20', 7:'348', 8:'-0,5', 9:'0,2', 10:'44',
+              21:'-102', 22:'3,8', 23:'4', 24:'56', 25:'0,81', 26:'320', 27:'-21', 28:'3', 29:'42', 30:'0,25'}
+
+    s_detect = []
+    s_etl = []
+    for key, val in dc_detect.items():
+        if val != dc_etl[key]:
+            s_detect.append(str(key)+': ' + val)
+            s_etl.append(str(key) + ': ' + dc_etl[key])
+
+    print(f'{s_etl} -- s_etl, {len(s_etl)=}')
+    print(f'{s_detect} -- s_detect, {len(s_detect)=}')

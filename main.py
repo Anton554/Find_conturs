@@ -1,7 +1,5 @@
 import asyncio
-
 import torch
-
 import setup
 import logging
 from handlers import telebot
@@ -13,17 +11,17 @@ bot = Bot(token=setup.token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dir_prog = os.path.dirname(os.path.abspath(__file__))
 
-
 # Загрузка модели нейронной сети Yolov5_m
-mode_yolo = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5_m_200ep_4bt.pt')
+model_vr = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5s_300ep_8bt_40v.pt', device='cpu')
+model_num = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5_m_200ep_4bt.pt', device='cpu')
+model_num.conf = 0.40
+model_vr.conf = 0.60
 
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-
     telebot.register_handlers(dp)
     telebot.register_handlers_final(dp)
-
     await dp.start_polling()
 
 

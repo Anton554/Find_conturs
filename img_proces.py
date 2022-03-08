@@ -5,8 +5,10 @@
 import numpy as np
 import cv2 as cv
 import os
-import main
+# import main
 # from main import dir_prog
+
+dir_prog = os.path.dirname(os.path.abspath(__file__))
 
 
 def img_show(img, win_name='window_name'):
@@ -82,11 +84,11 @@ def conv_img(img):
     # img_show(crop_img, 'Delete Gray')
     # Удаление шума
     # !!! При обработки бланков необходимо   kernel = np.ones((3,3),np.uint8)
-    kernel = np.ones((1,1), np.uint8)
+    kernel = np.ones((2,2), np.uint8)
     crop_img = cv.morphologyEx(crop_img, cv.MORPH_OPEN, kernel)
     # img_show(crop_img, 'morphologyEx')
     # Утолщение
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = np.ones((2, 2), np.uint8)
     crop_img = cv.dilate(crop_img, kernel, iterations=1)
     # img_show(crop_img, 'dilate')
     # Размытие по гаусу
@@ -100,10 +102,10 @@ def conv_img(img):
 
 
 def conv_img_pdf(img):
-    """ Преобразует серое изобр. в чёрно-белое 28 x 28
+    """ Преобразует в чёрно-белое 28 x 28
 
     :param img: np_arr
-    :return: np_arr(серое), np_arr(чёрно-белое 28 x 28)
+    :return: np_arr(чёрно-белое 28 x 28)
     """
     h1, w1 = 0, 0
     # img_show(img, 'win_1')
@@ -129,7 +131,7 @@ def conv_img_pdf(img):
     # crop_img = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY)
     # img_show(crop_img, 'copyMakeBorder')
     # Убираем серый цвет
-    _, crop_img = cv.threshold(crop_img, 80, 255, cv.THRESH_BINARY)
+    _, crop_img = cv.threshold(crop_img, 130, 255, cv.THRESH_BINARY)
     # img_show(crop_img, 'Delete Gray')
     # Удаление шума
     # !!! При обработки бланков необходимо   kernel = np.ones((3,3),np.uint8)
@@ -170,13 +172,13 @@ def save_file(cl, img, sub='raw'):
     :return: полное имя сохранённого файла
     """
     # Ищем макисмальный суффикс
-    ls_file = os.listdir(f'{main.dir_prog}/img/{sub}')
+    ls_file = os.listdir(f'{dir_prog}/img/{sub}')
     if len(ls_file) == 0:
         max_sufix = 0
     else:
         max_sufix = max([int(s.split('.')[0].split('_')[1]) for s in ls_file]) + 1
-    cv.imwrite(f'{main.dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png', img)
-    return f'{main.dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png'
+    cv.imwrite(f'{dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png', img)
+    return f'{dir_prog}/img/{sub}/{cl}-img_{max_sufix}.png'
 
 
 if __name__ == '__main__':
