@@ -15,7 +15,16 @@ def print_proc_fin(proc):
 
 
 def predict(net, img):
-    np_arr = img  # shape [28, 28, 3]
+    """ Классификация изобравения при помощи модели CNN
+
+    :param img: np_arr или путь к картинке png
+    :return: номер предсказанного класса и список процентов вероатности отнесения к
+            конкретному классу
+    """
+    if isinstance(img, str):
+        np_arr = cv.imread(img) # shape [28, 28, 3]
+    else:
+        np_arr = img
     transform = model_cnn.get_transform()
     tr = transform(np_arr)
     input = tr.reshape(1, 3, 28, 28)

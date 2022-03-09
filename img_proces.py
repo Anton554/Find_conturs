@@ -84,11 +84,11 @@ def conv_img(img):
     # img_show(crop_img, 'Delete Gray')
     # Удаление шума
     # !!! При обработки бланков необходимо   kernel = np.ones((3,3),np.uint8)
-    kernel = np.ones((2,2), np.uint8)
+    kernel = np.ones((1,1), np.uint8)
     crop_img = cv.morphologyEx(crop_img, cv.MORPH_OPEN, kernel)
     # img_show(crop_img, 'morphologyEx')
     # Утолщение
-    kernel = np.ones((2, 2), np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
     crop_img = cv.dilate(crop_img, kernel, iterations=1)
     # img_show(crop_img, 'dilate')
     # Размытие по гаусу

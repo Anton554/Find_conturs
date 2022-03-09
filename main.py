@@ -12,8 +12,8 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 dir_prog = os.path.dirname(os.path.abspath(__file__))
 
 # Загрузка модели нейронной сети Yolov5_m
-model_vr = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5s_300ep_8bt_40v.pt', force_reload=True, device='cpu')
-model_num = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5_m_200ep_4bt.pt', force_reload=True, device='cpu')
+model_vr = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5s_300ep_8bt_40v.pt', force_reload = True, device='cpu')
+model_num = torch.hub.load('ultralytics/yolov5', 'custom', dir_prog + os.sep + 'net/yolov5_m_200ep_4bt.pt', device='cpu')
 model_num.conf = 0.50
 model_vr.conf = 0.60
 
